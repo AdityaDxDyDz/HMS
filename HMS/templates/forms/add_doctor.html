@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2>{{ 'Edit Doctor' if edit else 'Add Doctor' }}</h2>
+        <form method="POST"
+              action="{{ url_for('main.edit_doctor', doctor_id=doctor_id) if edit else url_for('main.add_doctor') }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="mb-3">
+                {{ form.username.label(class="form-label") }}
+                {{ form.username(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.password.label(class="form-label") }}
+                {{ form.password(class="form-control") }}
+                {% if edit %}
+                <small class="form-text text-muted">Leave blank to keep current password</small>
+                {% endif %}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.confirm_password.label(class="form-label") }}
+                {{ form.confirm_password(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.name.label(class="form-label") }}
+                {{ form.name(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                {{ form.specialization.label(class="form-label") }}
+                {{ form.specialization(class="form-control") }}
+            </div>
+            
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    {{ 'Update Doctor' if edit else 'Add Doctor' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

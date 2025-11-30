@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Treatment Details</h2>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Appointment</h5>
+        <p><strong>Doctor:</strong> {{ appointment.doctor.name }} ({{ appointment.doctor.specialization }})</p>
+        <p><strong>Date & Time:</strong> {{ appointment.appointment_datetime.strftime('%Y-%m-%d %H:%M') }}</p>
+        <p><strong>Status:</strong> {{ appointment.status }}</p>
+    </div>
+</div>
+
+{% if treatments %}
+    {% for t in treatments %}
+    <div class="card mb-3">
+        <div class="card-header">
+            Treatment recorded: {{ t.created_at.strftime('%Y-%m-%d %H:%M') }}
+        </div>
+        <div class="card-body">
+            <p><strong>Diagnosis:</strong><br>{{ t.diagnosis.replace('\n', '<br>') | safe if t.diagnosis else "—" }}</p>
+            <p><strong>Prescriptions:</strong><br>{{ t.prescriptions.replace('\n', '<br>') | safe if t.prescriptions else "—" }}</p>
+            <p><strong>Notes:</strong><br>{{ t.notes.replace('\n', '<br>') | safe if t.notes else "—" }}</p>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p class="text-muted">No treatment records found for this appointment.</p>
+{% endif %}
+
+<a href="{{ url_for('main.patient_dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+{% endblock %}
