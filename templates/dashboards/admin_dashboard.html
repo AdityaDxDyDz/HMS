@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Admin Dashboard</h2>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Doctors</h5>
+                <p class="card-text">{{ total_doctors }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Patients</h5>
+                <p class="card-text">{{ total_patients }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-body">
+                <h5 class="card-title">Total Appointments</h5>
+                <p class="card-text">{{ total_appointments }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mt-4">
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab=='doctors' %}active{% endif %}" href="{{ url_for('main.admin_dashboard', tab='doctors') }}">Doctors</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab=='patients' %}active{% endif %}" href="{{ url_for('main.admin_dashboard', tab='patients') }}">Patients</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link {% if active_tab=='appointments' %}active{% endif %}" href="{{ url_for('main.admin_dashboard', tab='appointments') }}">Appointments</a>
+    </li>
+</ul>
+
+<div class="tab-content mt-3">
+
+    <!-- Doctors Tab -->
+    {% if active_tab=='doctors' %}
+    <div>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addDoctorModal">Add Doctor</button>
+        <form method="GET" class="mb-2">
+            <input type="hidden" name="tab" value="doctors">
+            <input type="text" name="query" class="form-control mb-2" placeholder="Search doctors..." value="{{ search_query }}">
+        </form>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Specialization</th>
+                    <th>Username</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for doctor in doctors %}
+                <tr>
+                    <td>{{ doctor.name }}</td>
+                    <td>{{ doctor.specialization }}</td>
+                    <td>{{ doctor.user.username }}</td>
+                    <td>
+                        <a href="{{ url_for('main.edit_doctor', doctor_id=doctor.id) }}" class="btn btn-sm btn-warning">Edit</a>
+                        <a href="{{ url_for('main.delete_doctor', doctor_id=doctor.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">Delete</a>
+                        <a href="{{ url_for('main.blacklist_doctor', doctor_id=doctor.id) }}" class="btn btn-sm btn-secondary">
+                            {% if doctor.user.is_blacklisted %}Unblock{% else %}Blacklist{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Patients Tab -->
+    {% if active_tab=='patients' %}
+    <div>
+        <form method="GET" class="mb-2">
+            <input type="hidden" name="tab" value="patients">
+            <input type="text" name="query" class="form-control mb-2" placeholder="Search patients..." value="{{ search_query }}">
+        </form>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Username</th>
+                    <th>Contact</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for patient in patients %}
+                <tr>
+                    <td>{{ patient.name }}</td>
+                    <td>{{ patient.user.username }}</td>
+                    <td>{{ patient.contact }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Appointments Tab -->
+    {% if active_tab=='appointments' %}
+    <div>
+        <form method="GET" class="mb-2">
+            <input type="hidden" name="tab" value="appointments">
+            <input type="text" name="query" class="form-control mb-2" placeholder="Search appointments..." value="{{ search_query }}">
+        </form>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in appointments %}
+                <tr>
+                    <td>{{ appt.patient.name }}</td>
+                    <td>{{ appt.doctor.name }}</td>
+                    <td>{{ appt.appointment_datetime }}</td>
+                    <td>{{ appt.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Add Doctor -->
+{% if add_doctor_form %}
+<div class="modal fade" id="addDoctorModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Doctor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{{ url_for('main.add_doctor') }}">
+                    {{ add_doctor_form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ add_doctor_form.username.label(class="form-label") }}
+                        {{ add_doctor_form.username(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ add_doctor_form.password.label(class="form-label") }}
+                        {{ add_doctor_form.password(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ add_doctor_form.confirm_password.label(class="form-label") }}
+                        {{ add_doctor_form.confirm_password(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ add_doctor_form.name.label(class="form-label") }}
+                        {{ add_doctor_form.name(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ add_doctor_form.specialization.label(class="form-label") }}
+                        {{ add_doctor_form.specialization(class="form-control") }}
+                    </div>
+                    <div class="mb-3">
+                        {{ add_doctor_form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Book Appointment</h2>
+
+{% if reschedule_id %}
+<p class="text-info">
+    You are rescheduling an appointment. Maximum 2 reschedules allowed.
+</p>
+{% endif %}
+
+<form method="POST">
+    <!-- Pick Specialization -->
+    <div class="mb-3">
+        <label for="specialization">Choose Specialization:</label>
+        <select name="specialization" id="specialization" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Select Specialization --</option>
+            {% for spec in specializations %}
+            <option value="{{ spec }}" {% if spec == selected_spec %}selected{% endif %}>{{ spec }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    {% if doctors %}
+    <!-- Pick Doctor -->
+    <div class="mb-3">
+        <label for="doctor">Choose Doctor:</label>
+        <select name="doctor" id="doctor" class="form-select" onchange="this.form.submit()">
+            <option value="">-- Select Doctor --</option>
+            {% for doc in doctors %}
+            <option value="{{ doc.id }}" {% if doc.id == selected_doctor_id %}selected{% endif %}>
+                Dr. {{ doc.name }} ({{ doc.specialization }})
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+    {% endif %}
+
+    {% if selected_doctor_id %}
+    <!-- Pick Date -->
+    <div class="mb-3">
+        <label for="selected_date">Choose Date:</label>
+        <input type="date" name="selected_date" id="selected_date" value="{{ selected_date or '' }}" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Show Slots</button>
+    {% endif %}
+</form>
+
+{% if free_slots %}
+<hr>
+<h4>Available Slots for {{ selected_date }}</h4>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Time</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dt in free_slots %}
+        <tr>
+            <td>{{ dt.strftime('%H:%M') }}</td>
+            <td>
+                <form method="POST">
+                    <input type="hidden" name="specialization" value="{{ selected_spec }}">
+                    <input type="hidden" name="doctor" value="{{ selected_doctor_id }}">
+                    <input type="hidden" name="selected_date" value="{{ selected_date }}">
+                    <input type="hidden" name="slot" value="{{ dt.strftime('%Y-%m-%d %H:%M') }}">
+                    {% if reschedule_id and reschedule_count >= 2 %}
+                        <button type="button" class="btn btn-secondary btn-sm" disabled>Max Reschedules Reached</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-success btn-sm">Book</button>
+                    {% endif %}
+                    {% if reschedule_id %}
+                        <input type="hidden" name="reschedule_id" value="{{ reschedule_id }}">
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% elif selected_date %}
+<p class="text-muted">No free slots available on this date.</p>
+{% endif %}
+
+{% endblock %}
